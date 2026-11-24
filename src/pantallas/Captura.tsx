@@ -14,7 +14,7 @@ import { AJUSTES_INICIALES, type Ajustes } from '../logica/captura'
 import { ESP, LETRA, TOQUE, useTema } from '../tema'
 
 type Permiso = 'concedido' | 'pendiente' | 'negado' | 'no hace falta'
-type Funcion = { clave: 'audio' | 'ubicacion' | 'pasos' | 'uso' | 'pagos'; titulo: string; capta: string; para: string; permiso: string }
+type Funcion = { clave: 'audio' | 'ubicacion' | 'pasos' | 'uso' | 'pagos' | 'fotos'; titulo: string; capta: string; para: string; permiso: string }
 
 const FUNCIONES: Funcion[] = [
   { clave: 'audio', titulo: 'Micrófono', capta: 'Tu voz, en tramos cortos (se cortan al dejar de hablar, al cambiar de app o al minuto), también con la pantalla apagada.', para: 'El dictado (va al chat de Hoy) y la escucha (notas de voz). El audio se sube y se transcribe, y queda guardado en el teléfono (módulo Audios).', permiso: 'Micrófono' },
@@ -22,6 +22,7 @@ const FUNCIONES: Funcion[] = [
   { clave: 'pasos', titulo: 'Pasos', capta: 'Los pasos y si caminás, por el sensor del teléfono (no por GPS), también con la app cerrada (el contador del teléfono, cada ~15 minutos).', para: 'Cruzar lo que dijiste con cómo te movías.', permiso: 'Actividad física' },
   { clave: 'uso', titulo: 'Tiempo en el teléfono', capta: 'Cuánto estuvo prendida la pantalla, cuántas veces lo desbloqueaste y cuánto pasaste en cada app. Nunca lo que hay adentro de cada app.', para: 'Medir la procrastinación de verdad: cuánto se fue en redes y video, y cruzarlo con tus días y tus metas.', permiso: 'Acceso a uso (se da una vez en los ajustes de Android)' },
   { clave: 'pagos', titulo: 'Avisos de pago', capta: 'Los avisos de las apps de pago y banco (Mercado Pago, Belo, el banco) que traen un monto. Android da acceso a todas las notificaciones: el teléfono ignora el resto sin guardarlo.', para: 'Que tus gastos y cobros entren solos al Monedero, para firmar en un toque.', permiso: 'Acceso a notificaciones (se da una vez en los ajustes de Android)' },
+  { clave: 'fotos', titulo: 'Fotos nuevas', capta: 'Cada foto que sacás con la cámara, sola, con su hora (no las capturas de pantalla ni lo que te llega por WhatsApp). Suben solo con wifi.', para: 'Que las comidas, los tickets y la balanza se anoten solos, y que lo demás quede leído en tu corpus y en tu Drive, sin llenar Hoy.', permiso: 'Fotos y videos' },
 ]
 
 export function Captura({ cerrar }: { cerrar: () => void }) {
@@ -38,6 +39,7 @@ export function Captura({ cerrar }: { cerrar: () => void }) {
     try { const { Pedometer } = await import('expo-sensors'); p.pasos = (await Pedometer.isAvailableAsync()) ? de(await Pedometer.getPermissionsAsync()) : 'no hace falta' } catch { p.pasos = 'pendiente' }
     p.uso = !hayModuloUso() ? 'no hace falta' : tienePermisoUso() ? 'concedido' : 'pendiente'
     p.pagos = !hayPagos() ? 'no hace falta' : tienePermisoPagos() ? 'concedido' : 'pendiente'
+    try { p.fotos = de(await (await import('expo-media-library/legacy')).getPermissionsAsync()) } catch { p.fotos = 'pendiente' }
     try { p.avisos = de(await (await import('expo-notifications')).getPermissionsAsync()) } catch { p.avisos = 'pendiente' }
     setPermisos(p)
   }, [])
@@ -60,6 +62,7 @@ export function Captura({ cerrar }: { cerrar: () => void }) {
       if (clave === 'ubicacion') await (await import('expo-location')).requestForegroundPermissionsAsync()
       if (clave === 'pasos') await (await import('expo-sensors')).Pedometer.requestPermissionsAsync()
       if (clave === 'avisos') await (await import('expo-notifications')).requestPermissionsAsync()
+      if (clave === 'fotos') await (await import('expo-media-library/legacy')).requestPermissionsAsync()
     } catch { /* sin el módulo */ }
     await leerPermisos()
   }

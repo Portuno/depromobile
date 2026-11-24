@@ -12,7 +12,7 @@ import { alSincronizar, sincronizar } from './sincronizar'
 import { claveNueva } from './logica/sincro'
 import { nombreYTipo, queHacer } from './logica/archivos'
 import { ultimoPunto } from './recorrido'
-import { ajustesCaptura } from './captura'
+import { ajustesCaptura, energiaYRed } from './captura'
 import { capta } from './logica/captura'
 
 function carpeta(): Directory {
@@ -69,11 +69,16 @@ export async function encolarCompartidos(c: Credenciales, archivos: { uri: strin
   return n
 }
 
-/** Sube lo que espera (de a uno, en orden). Lo subido sale de la cola y su copia se borra. */
+/**
+ * Sube lo que espera (de a uno, en orden). Lo subido sale de la cola y su copia se borra. Las fotos que tomó sola la
+ * galería (Mobile 2.1) esperan a una wifi: no gastan datos.
+ */
 export async function subirArchivos(c: Credenciales) {
+  const conWifi = (await energiaYRed()).tipo === 'WIFI'
   for (const a of await archivosEnCola()) {
+    if (a.auto && !conWifi) continue
     try {
-      await subirArchivo(c, a.uri, { id: a.id, nombre: a.nombre, tipo: a.tipo, nota: a.nota, en: a.en, lat: a.lat, lon: a.lon })
+      await subirArchivo(c, a.uri, { id: a.id, nombre: a.nombre, tipo: a.tipo, nota: a.nota, en: a.en, lat: a.lat, lon: a.lon, auto: !!a.auto })
       await sacarArchivo(a.id)
       try { new File(a.uri).delete() } catch { /* ya no estaba */ }
     } catch (e) {

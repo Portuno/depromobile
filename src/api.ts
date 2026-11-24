@@ -121,11 +121,11 @@ export const traerMapa = (c: Credenciales, dia?: string) => pedir<DiaMapa>(c, `m
 
 // ─── Mobile 1.2: archivos, actividad, lugares y el mapa de un rango ─────
 
-export type MetaArchivo = { id: string; nombre: string; tipo: string; nota?: string | null; en?: number | null; lat?: number | null; lon?: number | null }
+export type MetaArchivo = { id: string; nombre: string; tipo: string; nota?: string | null; en?: number | null; lat?: number | null; lon?: number | null; auto?: boolean }
 /** Una foto o un video (crudo): Deprocast lo procesa de fondo y lo que resulta aparece en Hoy. Un reintento no lo duplica. */
 export async function subirArchivo(c: Credenciales, uri: string, m: MetaArchivo): Promise<{ tipo: string; procesando?: boolean; repetido?: boolean }> {
   const { File } = await import('expo-file-system')
-  const q = new URLSearchParams({ id: m.id, nombre: m.nombre, tipo: m.tipo, ...(m.nota ? { nota: m.nota } : {}), ...(m.en ? { en: String(m.en) } : {}), ...(m.lat != null && m.lon != null ? { lat: String(m.lat), lon: String(m.lon) } : {}) })
+  const q = new URLSearchParams({ id: m.id, nombre: m.nombre, tipo: m.tipo, ...(m.nota ? { nota: m.nota } : {}), ...(m.en ? { en: String(m.en) } : {}), ...(m.lat != null && m.lon != null ? { lat: String(m.lat), lon: String(m.lon) } : {}), ...(m.auto ? { auto: '1' } : {}) })
   const r = await conTiempo(`${servidorSeguro(c.servidor)}/api/dispositivo/archivo?${q}`, { method: 'POST', headers: { authorization: `Bearer ${c.token}`, 'content-type': m.tipo || 'application/octet-stream' }, body: new File(uri) }, 10 * 60_000)
   const j = await r.json().catch(() => ({}))
   if (!r.ok) throw new ErrorApi(j.error ?? `Deprocast respondió ${r.status}`, r.status)
@@ -159,3 +159,8 @@ export type TipoLugar = 'casa' | 'trabajo' | 'empresa' | 'destino' | 'frecuente'
 export type LugarPropio = { id: number; nombre: string; lat: number; lon: number; tipo: TipoLugar | null }
 export const traerLugaresPropios = (c: Credenciales) => pedir<{ frecuentes: Frecuente[]; lugares: LugarPropio[] }>(c, 'lugares')
 export const marcarLugar = (c: Credenciales, l: { nombre: string; lat: number; lon: number; tipo: TipoLugar }) => pedir<{ id: number; nombre: string; tipo: TipoLugar | null }>(c, 'lugares', { method: 'POST', body: JSON.stringify(l) })
+
+// ─── Mobile 2.1: ánimo, sueños y carga ──────────────────────────────────
+/** Un evento chico de la cola (ánimo, sueño): la ruta del dispositivo y su cuerpo. */
+export const mandarEvento = (c: Credenciales, ruta: string, cuerpo: unknown) => pedir<unknown>(c, ruta, { method: 'POST', body: JSON.stringify(cuerpo) })
+export const subirCarga = (c: Credenciales, muestras: { en: number; cargando: boolean; nivel: number | null }[]) => pedir<{ guardadas: number }>(c, 'carga', { method: 'POST', body: JSON.stringify({ muestras }) })

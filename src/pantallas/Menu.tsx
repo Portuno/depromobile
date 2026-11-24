@@ -41,6 +41,8 @@ export function Menu({ c, irA, desvincular }: { c: Credenciales; irA: (m: Modulo
       case 'actividad': return `${x.pasos.toLocaleString('es-AR')} pasos`
       case 'audios': return x.audios.n ? `${x.audios.n} · ${mb(x.audios.bytes)}` : 'Ninguno todavía'
       case 'captura': return 'Qué capta'
+      case 'animo': return 'Cómo venís'
+      case 'sueno': return 'Lo que soñaste'
       default: return ''
     }
   }

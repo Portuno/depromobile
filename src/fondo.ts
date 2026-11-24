@@ -14,6 +14,9 @@ import { leerContador, subirPasos, cuentaConLaAppCerrada } from './pasos'
 import { subirUsoTelefono, tienePermisoUso } from './uso'
 import { revisarAvisos } from './avisos'
 import { subirPagos, tienePermisoPagos } from './pagos'
+import { subirCargaPendiente, tomarMuestraCarga } from './carga'
+import { revisarFotosNuevas } from './fotos'
+import { revisarDespertar, vaciarEventos } from './manana'
 
 export const TAREA_FONDO = 'deprocast-fondo'
 
@@ -27,6 +30,12 @@ TaskManager.defineTask(TAREA_FONDO, async () => {
     await subirUsoTelefono(c, { forzar: true }).catch(() => null)
     await subirPagos(c).catch(() => {})
     if (avisa(a)) await revisarAvisos(c, { forzar: true }).catch(() => {})
+    // Mobile 2.1: la carga (para el sueño), las fotos nuevas y, a la mañana, «¿soñaste algo?».
+    await tomarMuestraCarga().catch(() => {})
+    await subirCargaPendiente(c).catch(() => {})
+    if (capta(a, 'fotos')) await revisarFotosNuevas().catch(() => 0)
+    await vaciarEventos(c).catch(() => {})
+    if (avisa(a)) await revisarDespertar().catch(() => {})
     return BackgroundTask.BackgroundTaskResult.Success
   } catch { return BackgroundTask.BackgroundTaskResult.Failed }
 })
@@ -34,7 +43,7 @@ TaskManager.defineTask(TAREA_FONDO, async () => {
 /** ¿Hace falta la tarea? (algo de lo que hace está prendido y es posible en este teléfono). */
 async function hayQueHacer(): Promise<boolean> {
   const a = await ajustesCaptura()
-  return (capta(a, 'pasos') && cuentaConLaAppCerrada()) || (capta(a, 'uso') && tienePermisoUso()) || (capta(a, 'pagos') && tienePermisoPagos()) || avisa(a)
+  return a.todo || (capta(a, 'pasos') && cuentaConLaAppCerrada()) || (capta(a, 'uso') && tienePermisoUso()) || (capta(a, 'pagos') && tienePermisoPagos()) || avisa(a)
 }
 
 /** La registra (o la saca si no hace falta). Se llama al abrir y al cambiar los ajustes. */

@@ -26,6 +26,7 @@ import type { Modulo } from '../modulos'
 import { AREA_EXTRA, ESP, LETRA, TOQUE, useTema } from '../tema'
 import { useEscuchaGlobal } from '../escuchaGlobal'
 import { callar, decir } from '../voz'
+import { suenoPendiente } from '../manana'
 
 const hora = (ms: number) => new Date(ms).toTimeString().slice(0, 5)
 
@@ -57,6 +58,8 @@ export function Hoy({ c, irA, dictar = 0 }: { c: Credenciales; irA: (m: Modulo) 
   const [tirando, setTirando] = useState(false)
   const [subiendo, setSubiendo] = useState<ArchivoEnCola[]>([])
   const [foto, setFoto] = useState<{ archivo: string; descripcion: string } | null>(null)
+  // Mobile 2.1: a la mañana, «¿soñaste algo?» (hasta que lo anotes o digas que no te acordás).
+  const [sueno, setSueno] = useState(false)
   const lista = useRef<FlatList<MensajeLocal>>(null)
   // El teclado (1.0.1): la pantalla le deja su lugar abajo, así lo que escribís queda a la vista.
   const teclado = useAltoTeclado()
@@ -72,7 +75,8 @@ export function Hoy({ c, irA, dictar = 0 }: { c: Credenciales; irA: (m: Modulo) 
     setMensajes(l.mensajes)
     setParaValidar(l.paraValidar)
     setSincro(await estadoSincro())
-    setSubiendo(await archivosEnCola())
+    setSubiendo((await archivosEnCola()).filter((a) => !a.auto))
+    setSueno(await suenoPendiente())
   }, [])
 
   useEffect(() => {
@@ -137,6 +141,12 @@ export function Hoy({ c, irA, dictar = 0 }: { c: Credenciales; irA: (m: Modulo) 
       {escucha.retorno ? (
         <Pressable onPress={escucha.cerrarRetorno} style={[s.franja, { borderColor: t.linea }]} accessibilityRole="button" accessibilityLabel="Cerrar el aviso de la escucha">
           <Text style={[LETRA.chica, { color: t.texto, flex: 1 }]} numberOfLines={2}>{escucha.retorno}</Text>
+        </Pressable>
+      ) : null}
+      {sueno ? (
+        <Pressable onPress={() => irA('sueno')} style={[s.franja, { borderColor: t.linea }]} accessibilityRole="button">
+          <Text style={[LETRA.chica, { color: t.acento, fontWeight: '700', flex: 1 }]}>🌙 ¿Soñaste algo?</Text>
+          <Text style={[LETRA.chica, { color: t.tenue }]}>Anotar ›</Text>
         </Pressable>
       ) : null}
       {paraValidar ? (

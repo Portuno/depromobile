@@ -27,6 +27,12 @@ import { registrarAvisos } from './src/avisos'
 import { registrarPagos } from './src/pagos'
 import { subirUsoTelefono } from './src/uso'
 import { borrarCarpetaAudios } from './src/audios'
+import * as Notifications from 'expo-notifications'
+import { registrarCarga } from './src/carga'
+import { revisarFotosNuevas } from './src/fotos'
+import { atenderRespuesta, registrarManana } from './src/manana'
+import { Animo } from './src/pantallas/Animo'
+import { Sueno } from './src/pantallas/Sueno'
 import { Captura } from './src/pantallas/Captura'
 import { Mapa } from './src/pantallas/Mapa'
 import { Compartir } from './src/pantallas/Compartir'
@@ -85,6 +91,19 @@ export default function App() {
     registrarPagos()
     void subirUsoTelefono(c).catch(() => null)
     void recuperarTramos().then((n) => { if (n) void sincronizar(c) }).catch(() => {})
+    // Mobile 2.1: la carga (para el sueño), los avisos de ánimo y las fotos nuevas de la galería.
+    void registrarCarga()
+    registrarManana()
+    void revisarFotosNuevas().then((n) => { if (n) void sincronizar(c) }).catch(() => {})
+  }, [c])
+
+  // Lo que hiciste con un aviso: un botón de ánimo lo anota; tocar el aviso abre su módulo (también si abrió la app).
+  useEffect(() => {
+    if (!c) return
+    const atender = (r: Notifications.NotificationResponse | null) => { if (r) void atenderRespuesta(r, c, setModulo).then((m) => { if (m) setCartel(m) }) }
+    void Notifications.getLastNotificationResponseAsync().then(atender).catch(() => {})
+    const x = Notifications.addNotificationResponseReceivedListener(atender)
+    return () => x.remove()
   }, [c])
 
   const desvincular = () => Alert.alert('¿Desvincular este teléfono?', 'Se borra el token y todo lo guardado acá, audios incluidos. En Deprocast, revocalo también en Apps conectadas.', [
@@ -104,6 +123,8 @@ export default function App() {
         <EscuchaGlobal c={c}>
           <View style={s.cuerpo}>
             {modulo === 'hoy' ? <Hoy c={c} irA={setModulo} dictar={dictar} />
+              : modulo === 'animo' ? <Animo c={c} irA={setModulo} avisar={setCartel} />
+              : modulo === 'sueno' ? <Sueno c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'mapa' ? <Mapa c={c} />
               : modulo === 'escucha' ? <Escucha c={c} />
               : modulo === 'validar' ? <Validar c={c} />
