@@ -39,7 +39,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "node --disable-warning=ExperimentalWarning --test \"test/**/*.test.ts\"",
-    "traer-conciencia": "node scripts/traer-conciencia.mjs"
+    "traer-conciencia": "node scripts/traer-conciencia.mjs",
+    "traer-contrato": "node scripts/traer-conciencia.mjs"
   },
   "private": true
 }

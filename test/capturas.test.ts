@@ -33,3 +33,12 @@ test('Mobile 2.1 · el aviso de ánimo: tres botones (Android no muestra más) q
   assert.match(app, /addNotificationResponseReceivedListener/, 'el toque de un aviso se atiende')
   assert.match(app, /getLastNotificationResponseAsync/, 'también si abrió la app')
 })
+
+test('Mobile 2.3 · los cambios de app para el foco: sin el lanzador ni la misma app seguida', async () => {
+  const uso = await import(`../src/logica/${'uso'}.ts`)
+  assert.deepEqual(uso.limpiarCambios([
+    { t: 3, p: 'com.notion.id' }, { t: 1, p: 'com.whatsapp' }, { t: 2, p: 'com.android.launcher3' }, { t: 4, p: 'com.notion.id' },
+  ]), [[1, 'com.whatsapp'], [3, 'com.notion.id']])
+  const r = uso.resumirUso('2026-11-16', { pantallaMs: 0, desbloqueos: 0, apps: [] })
+  assert.equal(r.cambios, undefined, 'un APK sin el dato no manda cambios vacíos')
+})

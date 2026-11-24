@@ -1,0 +1,8 @@
+{
+  "name": "contexto-telefono",
+  "version": "0.1.0",
+  "description": "La wifi a la que está conectado el teléfono y los dispositivos de audio Bluetooth (el auto, los auriculares).",
+  "main": "index.ts",
+  "private": true,
+  "license": "MIT"
+}

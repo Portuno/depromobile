@@ -2,7 +2,7 @@
  * Los módulos de la app (Mobile 2.0): un solo lugar con su nombre, su ícono y para qué sirve. La barra de abajo muestra
  * cuatro; el Menú, todos.
  */
-export type Modulo = 'hoy' | 'mapa' | 'escucha' | 'menu' | 'validar' | 'actividad' | 'audios' | 'captura' | 'animo' | 'sueno'
+export type Modulo = 'hoy' | 'mapa' | 'escucha' | 'menu' | 'validar' | 'actividad' | 'audios' | 'captura' | 'animo' | 'sueno' | 'diario'
 
 export const MODULOS: Record<Modulo, { nombre: string; icono: string; para: string }> = {
   hoy: { nombre: 'Hoy', icono: '💬', para: 'Charlar con Mastropiero' },
@@ -15,9 +15,10 @@ export const MODULOS: Record<Modulo, { nombre: string; icono: string; para: stri
   captura: { nombre: 'Permisos', icono: '⚙', para: 'Qué capta y qué no' },
   animo: { nombre: 'Ánimo', icono: '🙂', para: 'Cómo venís, de 1 a 5' },
   sueno: { nombre: 'Sueño', icono: '🌙', para: 'Lo que soñaste' },
+  diario: { nombre: 'Diario', icono: '📔', para: 'Tu día en una línea' },
 }
 
 /** Los fijos de abajo. */
 export const BARRA: Modulo[] = ['hoy', 'mapa', 'escucha', 'menu']
 /** Los del Menú, en orden. */
-export const EN_MENU: Modulo[] = ['hoy', 'mapa', 'escucha', 'validar', 'actividad', 'animo', 'audios', 'sueno', 'captura']
+export const EN_MENU: Modulo[] = ['hoy', 'diario', 'mapa', 'escucha', 'validar', 'actividad', 'animo', 'audios', 'sueno', 'captura']

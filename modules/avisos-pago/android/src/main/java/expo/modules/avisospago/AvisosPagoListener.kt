@@ -19,6 +19,9 @@ class AvisosPagoListener : NotificationListenerService() {
     const val PREFS = "deprocast_avisos_pago"
     const val COLA = "cola"
     const val PAQUETES = "paquetes"
+    // Mobile 2.3: lo que suena (de los avisos de reproducción de las apps de música).
+    const val SONANDO = "sonando"
+    private val MUSICA = Regex("(?i)spotify|apps\\.youtube\\.music|deezer|soundcloud|tidal|amazon\\.mp3|apple\\.android\\.music|music")
     private val NOMBRE_DE_PAGO = Regex("(?i)\\b(bank|banco|banca|pay|wallet|billetera|card|tarjeta|revolut|n26|bbva|santander|caixa|ing\\b|sabadell|bankinter|openbank|mercado ?pago|belo|wise|ual[aá]|brubank|naranja|galicia|lemon|prex)")
     // El signo pesos va escapado para Kotlin (\$) y para la expresión regular (\\): «\\\$».
     private val MONTO = Regex("(€|EUR|US\\\$|USD|U\\\$S|\\\$|ARS|USDC|USDT)\\s?\\d|\\d[\\d.,]*\\s?(€|EUR|USD|ARS|pesos|euros|d[oó]lares)", RegexOption.IGNORE_CASE)
@@ -26,6 +29,25 @@ class AvisosPagoListener : NotificationListenerService() {
     fun cola(ctx: Context): JSONArray = try { JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(COLA, "[]")) } catch (_: Exception) { JSONArray() }
     fun guardarCola(ctx: Context, a: JSONArray) { ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(COLA, a.toString()).apply() }
     fun paquetes(ctx: Context): Set<String> = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet(PAQUETES, emptySet()) ?: emptySet()
+    fun sonando(ctx: Context): JSONArray = try { JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(SONANDO, "[]")) } catch (_: Exception) { JSONArray() }
+    fun guardarSonando(ctx: Context, a: JSONArray) { ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(SONANDO, a.toString()).apply() }
+  }
+
+  /** Un aviso de reproducción de una app de música: el tema y el artista (solo si cambió desde el último). */
+  private fun anotarSonando(n: StatusBarNotification): Boolean {
+    val esMedia = n.notification.extras.containsKey(Notification.EXTRA_MEDIA_SESSION) || n.notification.category == Notification.CATEGORY_TRANSPORT
+    if (!esMedia || !MUSICA.containsMatchIn(n.packageName)) return false
+    val extras = n.notification.extras
+    val tema = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()?.trim() ?: return true
+    val artista = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.trim() ?: ""
+    if (tema.isEmpty()) return true
+    val c = sonando(this)
+    val ultimo = if (c.length() > 0) c.optJSONObject(c.length() - 1) else null
+    if (ultimo != null && ultimo.optString("tema") == tema && ultimo.optString("artista") == artista) return true
+    c.put(JSONObject().put("paquete", n.packageName).put("app", nombreDe(n.packageName)).put("tema", tema.take(200)).put("artista", artista.take(200)).put("en", System.currentTimeMillis().toDouble()))
+    val recortada = if (c.length() > 500) JSONArray().also { r -> for (i in c.length() - 500 until c.length()) r.put(c.get(i)) } else c
+    guardarSonando(this, recortada)
+    return true
   }
 
   private fun nombreDe(paquete: String): String = try {
@@ -37,6 +59,7 @@ class AvisosPagoListener : NotificationListenerService() {
     val n = sbn ?: return
     try {
       if (n.packageName == packageName) return
+      if (anotarSonando(n)) return
       if ((n.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
       val app = nombreDe(n.packageName)
       if (n.packageName !in paquetes(this) && !NOMBRE_DE_PAGO.containsMatchIn(app) && !NOMBRE_DE_PAGO.containsMatchIn(n.packageName)) return

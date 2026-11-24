@@ -12,7 +12,7 @@ export type MensajeRemoto = { id: number; rol: 'operador' | 'asistente'; texto: 
 export type Actividad = { fecha: string; pasos: number; meta: number; avance: number; minutosCaminando: number; km: number; fuente: string }
 export type PaqueteHoy = { dispositivo: string; estado?: string; conversacion: number; mensajes: MensajeRemoto[]; paraValidar: number; servidorEn?: number; marca?: string; actividad?: Actividad | null; uso?: UsoHoy | null }
 /** Mobile 1.3: el uso del teléfono de hoy (lo que ya sabe el servidor). */
-export type UsoHoy = { pantallaMin: number; distraccionMin: number; desbloqueos: number; apps: { nombre: string; min: number; distraccion: boolean }[] }
+export type UsoHoy = { pantallaMin: number; distraccionMin: number; desbloqueos: number; apps: { nombre: string; min: number; distraccion: boolean }[]; foco?: { tramoMasLargoMin: number; app: string | null; cambiosPorHora: number } | null }
 
 /** Un error de Deprocast con su código (null = no hubo respuesta: sin red o se cortó por tiempo). */
 export class ErrorApi extends Error {
@@ -164,3 +164,17 @@ export const marcarLugar = (c: Credenciales, l: { nombre: string; lat: number; l
 /** Un evento chico de la cola (ánimo, sueño): la ruta del dispositivo y su cuerpo. */
 export const mandarEvento = (c: Credenciales, ruta: string, cuerpo: unknown) => pedir<unknown>(c, ruta, { method: 'POST', body: JSON.stringify(cuerpo) })
 export const subirCarga = (c: Credenciales, muestras: { en: number; cargando: boolean; nivel: number | null }[]) => pedir<{ guardadas: number }>(c, 'carga', { method: 'POST', body: JSON.stringify({ muestras }) })
+
+// ─── Mobile 2.2: el Diario del día ──────────────────────────────────────
+export type MomentoDiario = { en: number; hasta?: number | null; tipo: string; icono: string; titulo: string; sub: string | null; lat?: number | null; lon?: number | null; foto?: string | null }
+export type DiarioDia = {
+  fecha: string
+  resumen: { pasos: number; km: number; pantallaMin: number | null; desbloqueos: number | null; suenoHoras: number | null; animo: number | null; gastos: number; fotos: number; charlas: number; paradas: number; mensajes: number }
+  momentos: MomentoDiario[]
+  pasosPorHora: number[]
+  mapa: { puntos: [number, number][]; paradas: { lat: number; lon: number; n: number; lugar: string | null }[] }
+}
+export const traerDiario = (c: Credenciales, fecha: string) => pedir<DiarioDia>(c, `diario?fecha=${fecha}`)
+
+// ─── Mobile 2.3: lo que suena ───────────────────────────────────────────
+export const mandarEscuchas = (c: Credenciales, escuchas: { en: number; tema: string; artista: string; app?: string }[]) => pedir<{ nuevas: number }>(c, 'escuchas', { method: 'POST', body: JSON.stringify({ escuchas }) })

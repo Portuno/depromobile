@@ -29,7 +29,8 @@
         "android.permission.FOREGROUND_SERVICE_MICROPHONE",
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.SCHEDULE_EXACT_ALARM",
-        "android.permission.USE_EXACT_ALARM"
+        "android.permission.USE_EXACT_ALARM",
+        "android.permission.ACCESS_WIFI_STATE"
       ],
       "blockedPermissions": [
         "android.permission.READ_CONTACTS",

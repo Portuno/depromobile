@@ -77,6 +77,8 @@ class UsoTelefonoModule : Module() {
       var desbloqueos = 0
       // Cuándo estuvo prendida la pantalla (Mobile 1.5, para el sueño estimado): [desde, hasta] en ms.
       val sesiones = mutableListOf<List<Double>>()
+      // Mobile 2.3: cada vez que pasó a otra app (para el foco: cuánto aguanta en una sin saltar). { t, p }.
+      val cambios = mutableListOf<Map<String, Any>>()
       fun sumar(m: HashMap<String, Long>, k: String, a: Long, b: Long) {
         val x = maxOf(a, desde)
         val y = minOf(b, hasta)
@@ -103,6 +105,7 @@ class UsoTelefonoModule : Module() {
               actual = p
               inicio = t
               if (!misma && t >= desde) aperturas[p] = (aperturas[p] ?: 0) + 1
+              if (!misma && t >= desde && t <= hasta) cambios.add(mapOf("t" to t.toDouble(), "p" to p))
             }
           }
           2, 23 -> { // ACTIVITY_PAUSED, ACTIVITY_STOPPED
@@ -130,7 +133,7 @@ class UsoTelefonoModule : Module() {
       val apps = ms.entries.sortedByDescending { it.value }.take(80).map { (paquete, tiempo) ->
         mapOf("paquete" to paquete, "nombre" to nombreDe(ctx, paquete), "ms" to tiempo.toDouble(), "aperturas" to (aperturas[paquete] ?: 0))
       }
-      mapOf("pantallaMs" to pantallaMs.toDouble(), "desbloqueos" to desbloqueos, "apps" to apps, "sesiones" to sesiones.takeLast(400))
+      mapOf("pantallaMs" to pantallaMs.toDouble(), "desbloqueos" to desbloqueos, "apps" to apps, "sesiones" to sesiones.takeLast(400), "cambios" to cambios.takeLast(3000))
     }
   }
 }

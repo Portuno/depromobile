@@ -42,6 +42,22 @@ class AvisosPagoModule : Module() {
       (0 until c.length()).mapNotNull { i -> c.optJSONObject(i)?.let { x: JSONObject -> mapOf("paquete" to x.optString("paquete"), "app" to x.optString("app"), "titulo" to x.optString("titulo"), "texto" to x.optString("texto"), "en" to x.optDouble("en")) } }
     }
 
+    // Mobile 2.3: lo que sonó (tema, artista, app y cuándo empezó), sin sacarlo; se saca con soltarSonando.
+    Function("sonandoPendientes") {
+      val ctx = contexto ?: return@Function emptyList<Map<String, Any?>>()
+      val c = AvisosPagoListener.sonando(ctx)
+      (0 until c.length()).mapNotNull { i -> c.optJSONObject(i)?.let { x: JSONObject -> mapOf("paquete" to x.optString("paquete"), "app" to x.optString("app"), "tema" to x.optString("tema"), "artista" to x.optString("artista"), "en" to x.optDouble("en")) } }
+    }
+
+    Function("soltarSonando") { hasta: Double ->
+      val ctx = contexto ?: return@Function 0
+      val c = AvisosPagoListener.sonando(ctx)
+      val queda = org.json.JSONArray()
+      for (i in 0 until c.length()) { val x = c.optJSONObject(i) ?: continue; if (x.optDouble("en") > hasta) queda.put(x) }
+      AvisosPagoListener.guardarSonando(ctx, queda)
+      c.length() - queda.length()
+    }
+
     // Saca de la cola lo que ya llegó al servidor (hasta ese instante, inclusive).
     Function("soltar") { hasta: Double ->
       val ctx = contexto ?: return@Function 0

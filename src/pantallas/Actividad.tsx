@@ -81,6 +81,7 @@ export function Actividad({ irA }: { irA: (m: Modulo) => void }) {
           <Text style={[LETRA.chica, { color: t.tenue }]}>EN EL TELÉFONO HOY</Text>
           <Text style={[LETRA.titulo, { color: t.texto, fontWeight: '700' }]}>{horasYMinutos(uso.pantallaMin)}</Text>
           <Text style={[LETRA.chica, { color: uso.distraccionMin ? t.mal : t.tenue }]}>{uso.distraccionMin ? `${horasYMinutos(uso.distraccionMin)} en distracción · ` : ''}{uso.desbloqueos} desbloqueos</Text>
+          {uso.foco ? <Text style={[LETRA.chica, { color: t.texto }]}>Foco: {horasYMinutos(uso.foco.tramoMasLargoMin)} seguidos{uso.foco.app ? ` en ${uso.foco.app}` : ''} · {uso.foco.cambiosPorHora} cambios de app por hora</Text> : null}
           {uso.apps.map((a) => (
             <View key={a.nombre} style={s.dia}>
               <Text style={[LETRA.cuerpo, { color: a.distraccion ? t.mal : t.texto, flex: 1 }]} numberOfLines={1}>{a.nombre}</Text>

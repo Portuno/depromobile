@@ -31,8 +31,11 @@ import * as Notifications from 'expo-notifications'
 import { registrarCarga } from './src/carga'
 import { revisarFotosNuevas } from './src/fotos'
 import { atenderRespuesta, registrarManana } from './src/manana'
+import { registrarContexto } from './src/contexto'
+import { registrarSonando } from './src/sonando'
 import { Animo } from './src/pantallas/Animo'
 import { Sueno } from './src/pantallas/Sueno'
+import { Diario } from './src/pantallas/Diario'
 import { Captura } from './src/pantallas/Captura'
 import { Mapa } from './src/pantallas/Mapa'
 import { Compartir } from './src/pantallas/Compartir'
@@ -94,6 +97,8 @@ export default function App() {
     // Mobile 2.1: la carga (para el sueño), los avisos de ánimo y las fotos nuevas de la galería.
     void registrarCarga()
     registrarManana()
+    registrarContexto()
+    registrarSonando()
     void revisarFotosNuevas().then((n) => { if (n) void sincronizar(c) }).catch(() => {})
   }, [c])
 
@@ -123,6 +128,7 @@ export default function App() {
         <EscuchaGlobal c={c}>
           <View style={s.cuerpo}>
             {modulo === 'hoy' ? <Hoy c={c} irA={setModulo} dictar={dictar} />
+              : modulo === 'diario' ? <Diario c={c} irA={setModulo} />
               : modulo === 'animo' ? <Animo c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'sueno' ? <Sueno c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'mapa' ? <Mapa c={c} />
