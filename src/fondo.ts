@@ -19,6 +19,7 @@ import { revisarFotosNuevas } from './fotos'
 import { revisarDespertar, vaciarEventos } from './manana'
 import { tomarContexto } from './contexto'
 import { subirSonando } from './sonando'
+import { subirLlamadas, subirRecibidos } from './comunicaciones'
 
 export const TAREA_FONDO = 'deprocast-fondo'
 
@@ -38,6 +39,8 @@ TaskManager.defineTask(TAREA_FONDO, async () => {
     if (capta(a, 'fotos')) await revisarFotosNuevas().catch(() => 0)
     await tomarContexto().catch(() => {})
     await subirSonando(c).catch(() => {})
+    await subirLlamadas(c).catch(() => {})
+    await subirRecibidos(c).catch(() => {})
     await vaciarEventos(c).catch(() => {})
     if (avisa(a)) await revisarDespertar().catch(() => {})
     return BackgroundTask.BackgroundTaskResult.Success

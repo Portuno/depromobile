@@ -33,6 +33,7 @@ import { revisarFotosNuevas } from './src/fotos'
 import { atenderRespuesta, registrarManana } from './src/manana'
 import { registrarContexto } from './src/contexto'
 import { registrarSonando } from './src/sonando'
+import { registrarComunicaciones } from './src/comunicaciones'
 import { Animo } from './src/pantallas/Animo'
 import { Sueno } from './src/pantallas/Sueno'
 import { Diario } from './src/pantallas/Diario'
@@ -99,6 +100,7 @@ export default function App() {
     registrarManana()
     registrarContexto()
     registrarSonando()
+    registrarComunicaciones()
     void revisarFotosNuevas().then((n) => { if (n) void sincronizar(c) }).catch(() => {})
   }, [c])
 

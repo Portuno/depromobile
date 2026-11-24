@@ -5,8 +5,9 @@
 import { requireOptionalNativeModule } from 'expo'
 
 export type AvisoPago = { paquete: string; app: string; titulo: string; texto: string; en: number }
+export type Recibido = { app: string; remitente: string; conversacion: string | null; grupo: boolean; en: number }
 export type Sonando = { paquete: string; app: string; tema: string; artista: string; en: number }
-type Nativo = { tienePermiso(): boolean; abrirPermiso(): boolean; fijarPaquetes(p: string[]): boolean; pendientes(): AvisoPago[]; soltar(hasta: number): number; sonandoPendientes?(): Sonando[]; soltarSonando?(hasta: number): number }
+type Nativo = { tienePermiso(): boolean; abrirPermiso(): boolean; fijarPaquetes(p: string[]): boolean; pendientes(): AvisoPago[]; soltar(hasta: number): number; sonandoPendientes?(): Sonando[]; soltarSonando?(hasta: number): number; fijarMensajes?(si: boolean): boolean; recibidosPendientes?(): Recibido[]; soltarRecibidos?(hasta: number): number }
 const nativo = requireOptionalNativeModule<Nativo>('AvisosPago')
 
 export const hayAvisosPago = () => nativo != null
@@ -18,3 +19,7 @@ export const soltarPagos = (hasta: number): number => { try { return nativo?.sol
 // Mobile 2.3: lo que sonó en las apps de música (un APK anterior no tiene estas funciones: no hay nada).
 export const sonandoPendientes = (): Sonando[] => { try { return nativo?.sonandoPendientes?.() ?? [] } catch { return [] } }
 export const soltarSonando = (hasta: number): number => { try { return nativo?.soltarSonando?.(hasta) ?? 0 } catch { return 0 } }
+// Mobile 2.4: quién te escribe (un APK anterior no tiene estas funciones: no hay nada).
+export const fijarMensajes = (si: boolean): boolean => { try { return nativo?.fijarMensajes?.(si) ?? false } catch { return false } }
+export const recibidosPendientes = (): Recibido[] => { try { return nativo?.recibidosPendientes?.() ?? [] } catch { return [] } }
+export const soltarRecibidos = (hasta: number): number => { try { return nativo?.soltarRecibidos?.(hasta) ?? 0 } catch { return 0 } }

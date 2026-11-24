@@ -178,3 +178,7 @@ export const traerDiario = (c: Credenciales, fecha: string) => pedir<DiarioDia>(
 
 // ─── Mobile 2.3: lo que suena ───────────────────────────────────────────
 export const mandarEscuchas = (c: Credenciales, escuchas: { en: number; tema: string; artista: string; app?: string }[]) => pedir<{ nuevas: number }>(c, 'escuchas', { method: 'POST', body: JSON.stringify({ escuchas }) })
+
+// ─── Mobile 2.4: quién te llama y quién te escribe (nunca lo que se dice) ──
+export const mandarLlamadas = (c: Credenciales, llamadas: { en: number; numero: string | null; nombre: string | null; tipo: string; duracionS: number }[]) => pedir<{ nuevas: number }>(c, 'llamadas', { method: 'POST', body: JSON.stringify({ llamadas }) })
+export const mandarRecibidos = (c: Credenciales, mensajes: { en: number; app: string; remitente: string; conversacion: string | null; grupo: boolean }[]) => pedir<{ nuevos: number }>(c, 'recibidos', { method: 'POST', body: JSON.stringify({ mensajes }) })

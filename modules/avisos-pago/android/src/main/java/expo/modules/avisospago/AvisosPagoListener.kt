@@ -21,6 +21,15 @@ class AvisosPagoListener : NotificationListenerService() {
     const val PAQUETES = "paquetes"
     // Mobile 2.3: lo que suena (de los avisos de reproducción de las apps de música).
     const val SONANDO = "sonando"
+    // Mobile 2.4: quién te escribe (de las apps de mensajería). Solo si la app lo prendió (Permisos → Quién te escribe).
+    const val RECIBIDOS = "recibidos"
+    const val CON_MENSAJES = "con_mensajes"
+    private val MENSAJERIA = mapOf(
+      "com.whatsapp" to "WhatsApp", "com.whatsapp.w4b" to "WhatsApp Business", "org.telegram.messenger" to "Telegram",
+      "org.thoughtcrime.securesms" to "Signal", "com.instagram.android" to "Instagram", "com.facebook.orca" to "Messenger",
+      "com.google.android.apps.messaging" to "SMS", "com.samsung.android.messaging" to "SMS", "com.huawei.message" to "SMS", "com.android.mms" to "SMS",
+      "com.discord" to "Discord", "com.slack" to "Slack", "com.linkedin.android" to "LinkedIn",
+    )
     private val MUSICA = Regex("(?i)spotify|apps\\.youtube\\.music|deezer|soundcloud|tidal|amazon\\.mp3|apple\\.android\\.music|music")
     private val NOMBRE_DE_PAGO = Regex("(?i)\\b(bank|banco|banca|pay|wallet|billetera|card|tarjeta|revolut|n26|bbva|santander|caixa|ing\\b|sabadell|bankinter|openbank|mercado ?pago|belo|wise|ual[aá]|brubank|naranja|galicia|lemon|prex)")
     // El signo pesos va escapado para Kotlin (\$) y para la expresión regular (\\): «\\\$».
@@ -31,6 +40,35 @@ class AvisosPagoListener : NotificationListenerService() {
     fun paquetes(ctx: Context): Set<String> = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getStringSet(PAQUETES, emptySet()) ?: emptySet()
     fun sonando(ctx: Context): JSONArray = try { JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(SONANDO, "[]")) } catch (_: Exception) { JSONArray() }
     fun guardarSonando(ctx: Context, a: JSONArray) { ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(SONANDO, a.toString()).apply() }
+    fun recibidos(ctx: Context): JSONArray = try { JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(RECIBIDOS, "[]")) } catch (_: Exception) { JSONArray() }
+    fun guardarRecibidos(ctx: Context, a: JSONArray) { ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(RECIBIDOS, a.toString()).apply() }
+  }
+
+  /**
+   * Un aviso de una app de mensajería: quién escribe, en qué app, si es un grupo y cuándo. Nunca el texto. Los resúmenes
+   * («5 mensajes nuevos») no cuentan; el mismo aviso republicado (misma hora) tampoco.
+   */
+  private fun anotarRecibido(n: StatusBarNotification): Boolean {
+    val app = MENSAJERIA[n.packageName] ?: return false
+    if (!getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(CON_MENSAJES, false)) return true
+    if ((n.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return true
+    val extras = n.notification.extras
+    val conversacion = extras.getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)?.toString()?.trim()
+    val grupo = extras.getBoolean(Notification.EXTRA_IS_GROUP_CONVERSATION, false) || !conversacion.isNullOrEmpty()
+    var remitente = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()?.trim() ?: return true
+    // WhatsApp en grupos: «Grupo: Ana» o «Ana @ Grupo».
+    if (grupo && conversacion != null) remitente = remitente.removePrefix("$conversacion: ").substringBefore(" @ ")
+    if (remitente.isEmpty() || Regex("(?i)^(whatsapp|telegram|\\d+ (mensajes|messages)|mensajes nuevos)").containsMatchIn(remitente)) return true
+    val c = recibidos(this)
+    val en = n.postTime.toDouble()
+    for (i in maxOf(0, c.length() - 20) until c.length()) {
+      val x = c.optJSONObject(i) ?: continue
+      if (x.optString("app") == app && x.optString("remitente") == remitente && x.optDouble("en") == en) return true
+    }
+    c.put(JSONObject().put("app", app).put("remitente", remitente.take(80)).put("conversacion", conversacion?.take(80) ?: JSONObject.NULL).put("grupo", grupo).put("en", en))
+    val recortada = if (c.length() > 2000) JSONArray().also { r -> for (i in c.length() - 2000 until c.length()) r.put(c.get(i)) } else c
+    guardarRecibidos(this, recortada)
+    return true
   }
 
   /** Un aviso de reproducción de una app de música: el tema y el artista (solo si cambió desde el último). */
@@ -60,6 +98,7 @@ class AvisosPagoListener : NotificationListenerService() {
     try {
       if (n.packageName == packageName) return
       if (anotarSonando(n)) return
+      if (anotarRecibido(n)) return
       if ((n.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
       val app = nombreDe(n.packageName)
       if (n.packageName !in paquetes(this) && !NOMBRE_DE_PAGO.containsMatchIn(app) && !NOMBRE_DE_PAGO.containsMatchIn(n.packageName)) return

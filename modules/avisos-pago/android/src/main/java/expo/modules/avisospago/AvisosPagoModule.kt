@@ -49,6 +49,28 @@ class AvisosPagoModule : Module() {
       (0 until c.length()).mapNotNull { i -> c.optJSONObject(i)?.let { x: JSONObject -> mapOf("paquete" to x.optString("paquete"), "app" to x.optString("app"), "tema" to x.optString("tema"), "artista" to x.optString("artista"), "en" to x.optDouble("en")) } }
     }
 
+    // Mobile 2.4: quién te escribe. Prenderlo o apagarlo (lo decide la app según Permisos), y la cola.
+    Function("fijarMensajes") { si: Boolean ->
+      val ctx = contexto ?: return@Function false
+      ctx.getSharedPreferences(AvisosPagoListener.PREFS, Context.MODE_PRIVATE).edit().putBoolean(AvisosPagoListener.CON_MENSAJES, si).apply()
+      true
+    }
+
+    Function("recibidosPendientes") {
+      val ctx = contexto ?: return@Function emptyList<Map<String, Any?>>()
+      val c = AvisosPagoListener.recibidos(ctx)
+      (0 until c.length()).mapNotNull { i -> c.optJSONObject(i)?.let { x: JSONObject -> mapOf("app" to x.optString("app"), "remitente" to x.optString("remitente"), "conversacion" to (if (x.isNull("conversacion")) null else x.optString("conversacion")), "grupo" to x.optBoolean("grupo"), "en" to x.optDouble("en")) } }
+    }
+
+    Function("soltarRecibidos") { hasta: Double ->
+      val ctx = contexto ?: return@Function 0
+      val c = AvisosPagoListener.recibidos(ctx)
+      val queda = org.json.JSONArray()
+      for (i in 0 until c.length()) { val x = c.optJSONObject(i) ?: continue; if (x.optDouble("en") > hasta) queda.put(x) }
+      AvisosPagoListener.guardarRecibidos(ctx, queda)
+      c.length() - queda.length()
+    }
+
     Function("soltarSonando") { hasta: Double ->
       val ctx = contexto ?: return@Function 0
       val c = AvisosPagoListener.sonando(ctx)

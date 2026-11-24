@@ -1,0 +1,8 @@
+{
+  "name": "registro-llamadas",
+  "version": "0.1.0",
+  "description": "Lee el registro de llamadas del teléfono (quién, cuándo, cuánto, de qué tipo), con su permiso.",
+  "main": "index.ts",
+  "private": true,
+  "license": "MIT"
+}
