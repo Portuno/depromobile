@@ -13,6 +13,7 @@ import { pasosDeHoy } from '../pasos'
 import { recorridoPrendido } from '../recorrido'
 import { alCambiar, sincronizar } from '../sincronizar'
 import { ESP, LETRA, TOQUE, useTema } from '../tema'
+import { buscarActualizacion, versionActual } from '../actualizar'
 
 const hora = (ms: number) => new Date(ms).toTimeString().slice(0, 5)
 const mb = (b: number) => (b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : `${Math.max(0, Math.round(b / 1e6))} MB`)
@@ -24,6 +25,7 @@ export function Menu({ c, irA, desvincular }: { c: Credenciales; irA: (m: Modulo
   const e = useEscuchaGlobal()
   const [x, setX] = useState<Estado | null>(null)
   const [sincronizando, setSincronizando] = useState(false)
+  const [actualizando, setActualizando] = useState<string | null>(null)
 
   const leer = useCallback(async () => {
     const [chat, pasos, recorrido, audios, sincro, cola, archivos] = await Promise.all([leerChat(), pasosDeHoy(), recorridoPrendido(), resumenAudios(), estadoSincro(), cuantoEnCola(), archivosEnCola()])
@@ -80,6 +82,14 @@ export function Menu({ c, irA, desvincular }: { c: Credenciales; irA: (m: Modulo
             {x?.espera ? <Text style={[LETRA.chica, { color: t.tenue }]}>{x.espera} esperando salir</Text> : null}
           </View>
           <Text style={[LETRA.cuerpo, { color: t.acento, fontWeight: '700' }]}>↻</Text>
+        </Pressable>
+        <View style={[s.separador, { backgroundColor: t.linea }]} />
+        <Pressable onPress={async () => { setActualizando('Buscando…'); setActualizando(await buscarActualizacion()) }} style={s.renglon} accessibilityRole="button" accessibilityLabel="Buscar actualización">
+          <View style={{ flex: 1 }}>
+            <Text style={[LETRA.cuerpo, { color: t.texto }]}>Buscar actualización</Text>
+            <Text style={[LETRA.chica, { color: t.tenue }]} numberOfLines={2}>{actualizando ?? `Versión ${versionActual()}`}</Text>
+          </View>
+          <Text style={[LETRA.cuerpo, { color: t.acento, fontWeight: '700' }]}>⤓</Text>
         </Pressable>
         <View style={[s.separador, { backgroundColor: t.linea }]} />
         <Pressable onPress={desvincular} style={s.renglon} accessibilityRole="button">
