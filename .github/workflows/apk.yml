@@ -23,7 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
+      # El Android SDK ya viene en la máquina de GitHub (ANDROID_HOME); instalarlo de nuevo chocaba con ese.
       - run: npm ci
       - run: npm test
       - run: npx tsc --noEmit
