@@ -42,6 +42,9 @@ import { Compras } from './src/pantallas/Compras'
 import { Estado } from './src/pantallas/Estado'
 import { Plata } from './src/pantallas/Plata'
 import { Semana } from './src/pantallas/Semana'
+import { Buscar } from './src/pantallas/Buscar'
+import { Gente } from './src/pantallas/Gente'
+import { Respirar } from './src/pantallas/Respirar'
 import { registrarRun } from './src/run'
 import { refrescarGeovallas } from './src/geovallas'
 import { instalarReporteDeErrores } from './src/errores'
@@ -149,6 +152,9 @@ export default function App() {
               : modulo === 'estado' ? <Estado c={c} irA={setModulo} />
               : modulo === 'plata' ? <Plata c={c} avisar={setCartel} />
               : modulo === 'semana' ? <Semana c={c} irA={setModulo} />
+              : modulo === 'buscar' ? <Buscar c={c} />
+              : modulo === 'gente' ? <Gente c={c} />
+              : modulo === 'respirar' ? <Respirar c={c} avisar={setCartel} />
               : modulo === 'animo' ? <Animo c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'sueno' ? <Sueno c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'mapa' ? <Mapa c={c} />

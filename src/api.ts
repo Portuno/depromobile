@@ -212,3 +212,18 @@ export type Plata = {
 export const traerPlata = (c: Credenciales) => pedir<Plata>(c, 'plata')
 export type DiaSemana = { fecha: string; pasos: number; km: number; suenoHoras: number | null; animo: number | null; pantallaMin: number | null; gastos: number; llamadas: number; recibidos: number; fotos: number }
 export const traerSemana = (c: Credenciales) => pedir<{ dias: DiaSemana[]; promedio: { pasos: number | null; suenoHoras: number | null; animo: number | null; pantallaMin: number | null; gastos: number | null } }>(c, 'semana')
+
+// ─── Mobile 2.8: buscar, tu gente y respirar ───────────────────────────
+export type Busqueda = {
+  piezas: { id: number; titulo: string; fuente: string; fecha: string | null; extracto: string }[]
+  personas: { id: number; nombre: string; ultimoContacto: string | null }[]
+  misiones: { id: number; titulo: string; nivel: string; estado: string }[]
+  lugares: { id: number; nombre: string; lat: number; lon: number }[]
+  charla: { id: number; rol: string; en: number; extracto: string }[]
+}
+export const buscar = (c: Credenciales, q: string) => pedir<Busqueda>(c, `buscar?q=${encodeURIComponent(q)}`)
+export const traerPieza = (c: Credenciales, id: number) => pedir<{ id: number; titulo: string; fuente: string; fecha: string | null; autor: string | null; url: string | null; contenido: string; largo: number }>(c, `pieza/${id}`)
+export type Ficha = { id: number; nombre: string; nivel: number | null; importancia: number | null; ultimoContacto: string | null; diasSinContacto: number | null; cadaDias: number | null; vinculo: string | null }
+export const traerGente = (c: Credenciales) => pedir<{ toca: Ficha[]; importantes: Ficha[] }>(c, 'gente')
+export type Ejercicio = { id: string; nombre: string; intencion: string; descripcion: string; fases: { tipo: 'inhalar' | 'retener' | 'exhalar' | 'sostener'; seg: number }[]; ciclos: number | null; minutos: number | null; segundos: number }
+export const traerRespirar = (c: Credenciales) => pedir<{ ejercicios: Ejercicio[]; resumen: unknown }>(c, 'respirar')

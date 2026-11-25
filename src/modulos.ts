@@ -2,7 +2,7 @@
  * Los módulos de la app (Mobile 2.0): un solo lugar con su nombre, su ícono y para qué sirve. La barra de abajo muestra
  * cuatro; el Menú, todos.
  */
-export type Modulo = 'hoy' | 'mapa' | 'escucha' | 'menu' | 'validar' | 'actividad' | 'audios' | 'captura' | 'animo' | 'sueno' | 'diario' | 'run' | 'compras' | 'estado' | 'plata' | 'semana'
+export type Modulo = 'hoy' | 'mapa' | 'escucha' | 'menu' | 'validar' | 'actividad' | 'audios' | 'captura' | 'animo' | 'sueno' | 'diario' | 'run' | 'compras' | 'estado' | 'plata' | 'semana' | 'buscar' | 'gente' | 'respirar'
 
 export const MODULOS: Record<Modulo, { nombre: string; icono: string; para: string }> = {
   hoy: { nombre: 'Hoy', icono: '💬', para: 'Charlar con Mastropiero' },
@@ -21,9 +21,12 @@ export const MODULOS: Record<Modulo, { nombre: string; icono: string; para: stri
   estado: { nombre: 'Estado', icono: '🩺', para: 'Qué está captando' },
   plata: { nombre: 'Plata', icono: '💶', para: 'Anotar y firmar gastos' },
   semana: { nombre: 'Semana', icono: '📊', para: 'Tus 7 días en números' },
+  buscar: { nombre: 'Buscar', icono: '🔍', para: 'Todo Deprocast' },
+  gente: { nombre: 'Gente', icono: '👥', para: 'A quién le toca' },
+  respirar: { nombre: 'Respirar', icono: '🫁', para: 'Ejercicios guiados' },
 }
 
 /** Los fijos de abajo. */
 export const BARRA: Modulo[] = ['hoy', 'mapa', 'escucha', 'menu']
 /** Los del Menú, en orden. */
-export const EN_MENU: Modulo[] = ['run', 'diario', 'hoy', 'mapa', 'escucha', 'compras', 'plata', 'semana', 'validar', 'actividad', 'animo', 'audios', 'sueno', 'estado', 'captura']
+export const EN_MENU: Modulo[] = ['run', 'diario', 'hoy', 'buscar', 'mapa', 'escucha', 'gente', 'compras', 'plata', 'semana', 'validar', 'respirar', 'actividad', 'animo', 'audios', 'sueno', 'estado', 'captura']
