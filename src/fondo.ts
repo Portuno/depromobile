@@ -20,6 +20,8 @@ import { revisarDespertar, vaciarEventos } from './manana'
 import { tomarContexto } from './contexto'
 import { subirSonando } from './sonando'
 import { subirLlamadas, subirRecibidos } from './comunicaciones'
+import { refrescarRun } from './run'
+import { refrescarGeovallas } from './geovallas'
 
 export const TAREA_FONDO = 'deprocast-fondo'
 
@@ -41,6 +43,9 @@ TaskManager.defineTask(TAREA_FONDO, async () => {
     await subirSonando(c).catch(() => {})
     await subirLlamadas(c).catch(() => {})
     await subirRecibidos(c).catch(() => {})
+    // Mobile 2.5: la run de hoy (y sus avisos) y los lugares a vigilar.
+    if (avisa(a)) await refrescarRun(c).catch(() => null)
+    await refrescarGeovallas(c).catch(() => {})
     await vaciarEventos(c).catch(() => {})
     if (avisa(a)) await revisarDespertar().catch(() => {})
     return BackgroundTask.BackgroundTaskResult.Success

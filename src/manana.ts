@@ -14,6 +14,8 @@ import { ErrorApi, mandarEvento, type Credenciales } from './api'
 import { puedeAvisar } from './avisos'
 import { alSincronizar, sincronizar } from './sincronizar'
 import { BOTONES_ANIMO, HORAS_ANIMO, animoDeBoton, despertar } from './logica/capturas'
+import { estadoDeBoton } from './logica/run'
+import { marcarBanda } from './run'
 import type { Modulo } from './modulos'
 
 const CANAL = 'deprocast'
@@ -101,8 +103,15 @@ export async function atenderRespuesta(r: Notifications.NotificationResponse, c:
     await anotarAnimo(c, animo)
     return `Anotado: ánimo ${animo}/5`
   }
+  // Mobile 2.5: el aviso de fin de banda marca la banda.
+  const estado = estadoDeBoton(r.actionIdentifier)
+  const banda = Number(r.notification.request.content.data?.banda)
+  if (estado && banda) {
+    await marcarBanda(c, banda, estado)
+    return `Banda marcada: ${estado === 'hecha' ? 'hecha' : estado === 'parcial' ? 'a medias' : 'no'}`
+  }
   const ir = r.notification.request.content.data?.ir
-  if (ir === 'animo' || ir === 'sueno' || ir === 'hoy' || ir === 'validar') irA(ir)
+  if (ir === 'animo' || ir === 'sueno' || ir === 'hoy' || ir === 'validar' || ir === 'run' || ir === 'compras') irA(ir)
   return null
 }
 

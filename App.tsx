@@ -37,6 +37,12 @@ import { registrarComunicaciones } from './src/comunicaciones'
 import { Animo } from './src/pantallas/Animo'
 import { Sueno } from './src/pantallas/Sueno'
 import { Diario } from './src/pantallas/Diario'
+import { Run } from './src/pantallas/Run'
+import { Compras } from './src/pantallas/Compras'
+import { Estado } from './src/pantallas/Estado'
+import { registrarRun } from './src/run'
+import { refrescarGeovallas } from './src/geovallas'
+import { instalarReporteDeErrores } from './src/errores'
 import { Captura } from './src/pantallas/Captura'
 import { Mapa } from './src/pantallas/Mapa'
 import { Compartir } from './src/pantallas/Compartir'
@@ -52,6 +58,9 @@ import { Cartel } from './src/cartel'
 import { EscuchaGlobal, useEscuchaGlobal } from './src/escuchaGlobal'
 import { type Modulo, MODULOS, BARRA } from './src/modulos'
 import { ESP, LETRA, TOQUE, useTema } from './src/tema'
+
+// Los errores sin atrapar se reportan a Deprocast (Mobile 2.5): se arregla sin tener el teléfono en la mano.
+instalarReporteDeErrores()
 
 export default function App() {
   const t = useTema()
@@ -101,6 +110,8 @@ export default function App() {
     registrarContexto()
     registrarSonando()
     registrarComunicaciones()
+    registrarRun(c)
+    void refrescarGeovallas(c, { forzar: true }).catch(() => {})
     void revisarFotosNuevas().then((n) => { if (n) void sincronizar(c) }).catch(() => {})
   }, [c])
 
@@ -131,6 +142,9 @@ export default function App() {
           <View style={s.cuerpo}>
             {modulo === 'hoy' ? <Hoy c={c} irA={setModulo} dictar={dictar} />
               : modulo === 'diario' ? <Diario c={c} irA={setModulo} />
+              : modulo === 'run' ? <Run c={c} irA={setModulo} />
+              : modulo === 'compras' ? <Compras c={c} />
+              : modulo === 'estado' ? <Estado c={c} irA={setModulo} />
               : modulo === 'animo' ? <Animo c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'sueno' ? <Sueno c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'mapa' ? <Mapa c={c} />

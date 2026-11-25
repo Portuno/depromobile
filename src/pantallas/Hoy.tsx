@@ -27,6 +27,9 @@ import { AREA_EXTRA, ESP, LETRA, TOQUE, useTema } from '../tema'
 import { useEscuchaGlobal } from '../escuchaGlobal'
 import { callar, decir } from '../voz'
 import { suenoPendiente } from '../manana'
+import { alCambiarRun, runGuardada } from '../run'
+import { faltan } from '../logica/run'
+import type { RunTelefono } from '../api'
 
 const hora = (ms: number) => new Date(ms).toTimeString().slice(0, 5)
 
@@ -60,6 +63,9 @@ export function Hoy({ c, irA, dictar = 0 }: { c: Credenciales; irA: (m: Modulo) 
   const [foto, setFoto] = useState<{ archivo: string; descripcion: string } | null>(null)
   // Mobile 2.1: a la mañana, «¿soñaste algo?» (hasta que lo anotes o digas que no te acordás).
   const [sueno, setSueno] = useState(false)
+  // Mobile 2.5: la banda de ahora, arriba (tocándola, el módulo Run).
+  const [run, setRun] = useState<RunTelefono | null>(null)
+  useEffect(() => { void runGuardada().then(setRun); return alCambiarRun(setRun) }, [])
   const lista = useRef<FlatList<MensajeLocal>>(null)
   // El teclado (1.0.1): la pantalla le deja su lugar abajo, así lo que escribís queda a la vista.
   const teclado = useAltoTeclado()
@@ -143,6 +149,15 @@ export function Hoy({ c, irA, dictar = 0 }: { c: Credenciales; irA: (m: Modulo) 
           <Text style={[LETRA.chica, { color: t.texto, flex: 1 }]} numberOfLines={2}>{escucha.retorno}</Text>
         </Pressable>
       ) : null}
+      {(() => {
+        const b = run?.run && run.bandas.find((x) => x.id === run.ahora)
+        return b && run?.run ? (
+          <Pressable onPress={() => irA('run')} style={[s.franja, { borderColor: t.linea }]} accessibilityRole="button">
+            <Text style={[LETRA.chica, { color: t.acento, fontWeight: '700', flex: 1 }]} numberOfLines={1}>⏱ {b.titulo}</Text>
+            <Text style={[LETRA.chica, { color: t.tenue }]}>faltan {faltan(run.run.fecha, b.fin, Date.now())} ›</Text>
+          </Pressable>
+        ) : null
+      })()}
       {sueno ? (
         <Pressable onPress={() => irA('sueno')} style={[s.franja, { borderColor: t.linea }]} accessibilityRole="button">
           <Text style={[LETRA.chica, { color: t.acento, fontWeight: '700', flex: 1 }]}>🌙 ¿Soñaste algo?</Text>

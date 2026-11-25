@@ -24,7 +24,7 @@ type Rango = 'hoy' | 'ayer' | 'semana' | 'mes'
 const RANGOS: { clave: Rango; nombre: string }[] = [{ clave: 'hoy', nombre: 'Hoy' }, { clave: 'ayer', nombre: 'Ayer' }, { clave: 'semana', nombre: '7 d' }, { clave: 'mes', nombre: '30 d' }]
 export const TIPOS: { clave: TipoLugar; nombre: string; icono: string }[] = [
   { clave: 'casa', nombre: 'Casa', icono: '🏠' }, { clave: 'trabajo', nombre: 'Trabajo', icono: '💼' }, { clave: 'empresa', nombre: 'Empresa', icono: '🏢' },
-  { clave: 'destino', nombre: 'Destino', icono: '🎯' }, { clave: 'frecuente', nombre: 'Frecuente', icono: '⭐' }, { clave: 'otro', nombre: 'Otro', icono: '📍' },
+  { clave: 'tienda', nombre: 'Tienda', icono: '🛒' }, { clave: 'destino', nombre: 'Destino', icono: '🎯' }, { clave: 'frecuente', nombre: 'Frecuente', icono: '⭐' }, { clave: 'otro', nombre: 'Otro', icono: '📍' },
 ]
 const iconoDe = (tipo: TipoLugar | null) => TIPOS.find((x) => x.clave === tipo)?.icono ?? '📍'
 

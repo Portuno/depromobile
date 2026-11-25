@@ -3,6 +3,8 @@ import { registerRootComponent } from 'expo';
 import './src/recorrido';
 // Lo mismo la de fondo (Mobile 1.3): cada ~15 minutos, los pasos, el uso del teléfono y los avisos.
 import './src/fondo';
+// Y la de las geovallas (Mobile 2.5): avisa al llegar a una tienda o a un lugar con side quest.
+import './src/geovallas';
 
 import App from './App';
 

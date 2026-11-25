@@ -14,7 +14,7 @@ function rutasDeLaApp(): { metodo: string; ruta: string }[] {
     out.push({ metodo: m[5] ?? 'GET', ruta: ruta.replace(/\/$/, '/x.jpg') })
   }
   for (const m of api.matchAll(/\/api\/dispositivo\/([a-z/\-]+)[^`]*`, \{ method: '([A-Z]+)'/g)) out.push({ metodo: m[2], ruta: m[1] })
-  for (const f of ['src/manana.ts', 'src/contexto.ts']) for (const m of fs.readFileSync(f, 'utf8').matchAll(/encolarEvento\('([a-z]+)'/g)) out.push({ metodo: 'POST', ruta: m[1] })
+  for (const f of fs.readdirSync('src', { recursive: true }).map(String).filter((x) => x.endsWith('.ts') || x.endsWith('.tsx'))) for (const m of fs.readFileSync(`src/${f}`, 'utf8').matchAll(/encolarEvento\('([a-z/]+)'/g)) out.push({ metodo: 'POST', ruta: m[1] })
   return out
 }
 

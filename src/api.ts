@@ -155,7 +155,7 @@ export const traerAvisos = (c: Credenciales) => pedir<{ minutosAntes: number; av
 /** La dirección de un adjunto del chat (una foto, un PDF) y la cabecera con el token: el teléfono no tiene la clave. */
 export const urlAdjunto = (c: Credenciales, archivo: string, ancho?: number) => `${servidorSeguro(c.servidor)}/api/dispositivo/adjunto/${encodeURIComponent(archivo)}${ancho ? `?ancho=${ancho}` : ''}`
 export const cabeceraDe = (c: Credenciales) => ({ authorization: `Bearer ${c.token}` })
-export type TipoLugar = 'casa' | 'trabajo' | 'empresa' | 'destino' | 'frecuente' | 'otro'
+export type TipoLugar = 'casa' | 'trabajo' | 'empresa' | 'tienda' | 'destino' | 'frecuente' | 'otro'
 export type LugarPropio = { id: number; nombre: string; lat: number; lon: number; tipo: TipoLugar | null }
 export const traerLugaresPropios = (c: Credenciales) => pedir<{ frecuentes: Frecuente[]; lugares: LugarPropio[] }>(c, 'lugares')
 export const marcarLugar = (c: Credenciales, l: { nombre: string; lat: number; lon: number; tipo: TipoLugar }) => pedir<{ id: number; nombre: string; tipo: TipoLugar | null }>(c, 'lugares', { method: 'POST', body: JSON.stringify(l) })
@@ -182,3 +182,15 @@ export const mandarEscuchas = (c: Credenciales, escuchas: { en: number; tema: st
 // ─── Mobile 2.4: quién te llama y quién te escribe (nunca lo que se dice) ──
 export const mandarLlamadas = (c: Credenciales, llamadas: { en: number; numero: string | null; nombre: string | null; tipo: string; duracionS: number }[]) => pedir<{ nuevas: number }>(c, 'llamadas', { method: 'POST', body: JSON.stringify({ llamadas }) })
 export const mandarRecibidos = (c: Credenciales, mensajes: { en: number; app: string; remitente: string; conversacion: string | null; grupo: boolean }[]) => pedir<{ nuevos: number }>(c, 'recibidos', { method: 'POST', body: JSON.stringify({ mensajes }) })
+
+// ─── Mobile 2.5: la run, las compras, lo que pide un lugar y el estado ──
+export type Banda = { id: number; titulo: string; detalle: string | null; categoria: string | null; inicio: string; fin: string; minutos: number | null; estado: string; nota: string | null }
+export type RunTelefono = { run: { id: number; fecha: string; inicio: string; fin: string; estado: string } | null; bandas: Banda[]; ahora: number | null; siguiente: number | null; hechas: number }
+export const traerRun = (c: Credenciales) => pedir<RunTelefono>(c, 'run')
+export const arrancarRun = (c: Credenciales, id: number) => pedir<RunTelefono>(c, 'run/arrancar', { method: 'POST', body: JSON.stringify({ id }) })
+export const pasarASiguiente = (c: Credenciales, id: number) => pedir<RunTelefono>(c, 'run/siguiente', { method: 'POST', body: JSON.stringify({ id }) })
+export type Compra = { id: number; item: string; cantidad: string | null; nota: string | null; estado: 'pendiente' | 'comprado' | 'descartado' }
+export const traerCompras = (c: Credenciales) => pedir<{ pendientes: Compra[]; comprados: Compra[] }>(c, 'compras')
+export type Region = { id: string; tipo: 'side' | 'compras'; lat: number; lon: number; radio: number; titulo: string; cuerpo: string }
+export const traerCerca = (c: Credenciales) => pedir<{ regiones: Region[] }>(c, 'cerca')
+export const traerEstado = (c: Credenciales) => pedir<{ servidorEn: number; ultimas: Record<string, number | null> }>(c, 'estado')
