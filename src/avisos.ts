@@ -8,7 +8,7 @@
  */
 import { AppState, Platform } from 'react-native'
 import * as Notifications from 'expo-notifications'
-import { traerAvisos, traerHoy, traerMarca, type Credenciales } from './api'
+import { traerAvisos, traerHoy, traerMarca, traerTanda, type Credenciales } from './api'
 import { actualizarWidget } from '../modules/widget-hoy'
 import { fijarAjuste, guardarPaquete, leerAjuste, leerChat } from './almacen'
 import { ajustesCaptura } from './captura'
@@ -79,7 +79,14 @@ async function novedades(c: Credenciales) {
   const v = masParaValidar(num(await leerAjuste('aviso_validar')), p.paraValidar)
   if (AppState.currentState !== 'active') {
     if (m.aviso) await mostrar(m.aviso.titulo, m.aviso.cuerpo)
-    if (v) await mostrar(v.titulo, v.cuerpo)
+    if (v) {
+      // Mobile 2.6: con la tarjeta de arriba de la tanda, para responderla desde el aviso (Sí / No).
+      const x = await traerTanda(c, 1).then((r) => r.tarjetas[0] ?? null).catch(() => null)
+      if (x) {
+        await Notifications.setNotificationCategoryAsync('validar', [{ identifier: 'validar-si', buttonTitle: 'Sí', options: { opensAppToForeground: true } }, { identifier: 'validar-no', buttonTitle: 'No', options: { opensAppToForeground: true } }]).catch(() => {})
+        await Notifications.scheduleNotificationAsync({ content: { title: v.titulo, body: x.texto, categoryIdentifier: 'validar', data: { ir: 'validar', tarjeta: { tipo: x.tipo, id: x.id } } }, trigger: Platform.OS === 'android' ? { channelId: CANAL } : null })
+      } else await mostrar(v.titulo, v.cuerpo)
+    }
   }
   await fijarAjuste('aviso_ultimo_msg', String(m.ultimo))
   await fijarAjuste('aviso_validar', String(p.paraValidar))

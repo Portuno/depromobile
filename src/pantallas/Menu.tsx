@@ -47,6 +47,8 @@ export function Menu({ c, irA, desvincular }: { c: Credenciales; irA: (m: Modulo
       case 'run': return 'La banda de ahora'
       case 'compras': return 'La lista'
       case 'estado': return 'Qué está captando'
+      case 'plata': return 'Anotar y firmar'
+      case 'semana': return 'Tus 7 días'
       case 'animo': return 'Cómo venís'
       case 'sueno': return 'Lo que soñaste'
       default: return ''

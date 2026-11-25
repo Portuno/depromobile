@@ -40,6 +40,8 @@ import { Diario } from './src/pantallas/Diario'
 import { Run } from './src/pantallas/Run'
 import { Compras } from './src/pantallas/Compras'
 import { Estado } from './src/pantallas/Estado'
+import { Plata } from './src/pantallas/Plata'
+import { Semana } from './src/pantallas/Semana'
 import { registrarRun } from './src/run'
 import { refrescarGeovallas } from './src/geovallas'
 import { instalarReporteDeErrores } from './src/errores'
@@ -145,6 +147,8 @@ export default function App() {
               : modulo === 'run' ? <Run c={c} irA={setModulo} />
               : modulo === 'compras' ? <Compras c={c} />
               : modulo === 'estado' ? <Estado c={c} irA={setModulo} />
+              : modulo === 'plata' ? <Plata c={c} avisar={setCartel} />
+              : modulo === 'semana' ? <Semana c={c} irA={setModulo} />
               : modulo === 'animo' ? <Animo c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'sueno' ? <Sueno c={c} irA={setModulo} avisar={setCartel} />
               : modulo === 'mapa' ? <Mapa c={c} />

@@ -194,3 +194,14 @@ export const traerCompras = (c: Credenciales) => pedir<{ pendientes: Compra[]; c
 export type Region = { id: string; tipo: 'side' | 'compras'; lat: number; lon: number; radio: number; titulo: string; cuerpo: string }
 export const traerCerca = (c: Credenciales) => pedir<{ regiones: Region[] }>(c, 'cerca')
 export const traerEstado = (c: Credenciales) => pedir<{ servidorEn: number; ultimas: Record<string, number | null> }>(c, 'estado')
+
+// ─── Mobile 2.6: la plata y la semana ───────────────────────────────────
+export type Plata = {
+  mes: { mes: string; ingresos: number; gastos: number; neto: number; porCategoria: Record<string, number>; meta: number | null; avanceMeta: number | null }
+  hoy: { id: number; monto: number; moneda: string; descripcion: string; categoria: string }[]
+  sugeridos: { id: number; fecha: string; monto: number; moneda: string; descripcion: string }[]
+  categorias: string[]
+}
+export const traerPlata = (c: Credenciales) => pedir<Plata>(c, 'plata')
+export type DiaSemana = { fecha: string; pasos: number; km: number; suenoHoras: number | null; animo: number | null; pantallaMin: number | null; gastos: number; llamadas: number; recibidos: number; fotos: number }
+export const traerSemana = (c: Credenciales) => pedir<{ dias: DiaSemana[]; promedio: { pasos: number | null; suenoHoras: number | null; animo: number | null; pantallaMin: number | null; gastos: number | null } }>(c, 'semana')

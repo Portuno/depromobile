@@ -103,6 +103,13 @@ export async function atenderRespuesta(r: Notifications.NotificationResponse, c:
     await anotarAnimo(c, animo)
     return `Anotado: ánimo ${animo}/5`
   }
+  // Mobile 2.6: el aviso de «esperan tu ok» responde la tarjeta.
+  const tarjeta = r.notification.request.content.data?.tarjeta as { tipo?: string; id?: number | string } | undefined
+  if ((r.actionIdentifier === 'validar-si' || r.actionIdentifier === 'validar-no') && tarjeta?.tipo != null && tarjeta.id != null) {
+    await encolarEvento('validar', { tipo: tarjeta.tipo, id: tarjeta.id, accion: r.actionIdentifier === 'validar-si' ? 'aceptar' : 'descartar' })
+    if (c) void sincronizar(c)
+    return r.actionIdentifier === 'validar-si' ? 'Aceptado' : 'Descartado'
+  }
   // Mobile 2.5: el aviso de fin de banda marca la banda.
   const estado = estadoDeBoton(r.actionIdentifier)
   const banda = Number(r.notification.request.content.data?.banda)
@@ -111,7 +118,7 @@ export async function atenderRespuesta(r: Notifications.NotificationResponse, c:
     return `Banda marcada: ${estado === 'hecha' ? 'hecha' : estado === 'parcial' ? 'a medias' : 'no'}`
   }
   const ir = r.notification.request.content.data?.ir
-  if (ir === 'animo' || ir === 'sueno' || ir === 'hoy' || ir === 'validar' || ir === 'run' || ir === 'compras') irA(ir)
+  if (ir === 'animo' || ir === 'sueno' || ir === 'hoy' || ir === 'validar' || ir === 'run' || ir === 'compras' || ir === 'plata') irA(ir)
   return null
 }
 
