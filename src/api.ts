@@ -146,9 +146,16 @@ export type AvisoApi = { clave: string; titulo: string; cuerpo: string; en: numb
 /** Fragua #296: los avisos de las apps de pago y banco que guardó el teléfono. */
 export const mandarAvisosPago = (c: Credenciales, avisos: { paquete: string; app: string; titulo: string; texto: string; en: number }[]) => pedir<{ recibidos: number; sugeridos: number }>(c, 'pagos', { method: 'POST', body: JSON.stringify({ avisos }) })
 // Validar en 5 minutos: la tanda de tarjetas (lo que más pesa de «Para validar») y el sí o no de cada una.
-export type Tarjeta = { tipo: string; id: number | string; grupo: string; texto: string; sub: string | null; si: string; no: string }
-export const traerTanda = (c: Credenciales, n = 10) => pedir<{ total: number; tarjetas: Tarjeta[] }>(c, `validar?n=${n}`)
-export const responderTarjeta = (c: Credenciales, t: Pick<Tarjeta, 'tipo' | 'id'>, accion: 'aceptar' | 'descartar') => pedir<{ ok: true }>(c, 'validar', { method: 'POST', body: JSON.stringify({ tipo: t.tipo, id: t.id, accion }) })
+export type Tarjeta = { tipo: string; id: number | string; grupo: string; texto: string; sub: string | null; si: string; no: string; en?: number | null }
+/** Mobile 2.7: filtrar por tipo (vacío = todos) y ordenar (lo que más pesa, lo más nuevo, lo más viejo o al azar). */
+export type OrdenTanda = 'peso' | 'nuevo' | 'viejo' | 'azar'
+export type FiltroTanda = { tipos: string[]; orden: OrdenTanda }
+export type Tanda = { total: number; filtrado?: number; tipos?: { tipo: string; nombre: string; n: number }[]; orden?: OrdenTanda; tarjetas: Tarjeta[] }
+export const traerTanda = (c: Credenciales, n = 10, f?: FiltroTanda) => pedir<Tanda>(c, `validar?n=${n}${f?.tipos.length ? `&tipos=${encodeURIComponent(f.tipos.join(','))}` : ''}${f ? `&orden=${f.orden}` : ''}`)
+/** Va con lo que se mostró (el texto de la tarjeta), para el registro de lo validado. */
+export const responderTarjeta = (c: Credenciales, t: Pick<Tarjeta, 'tipo' | 'id'> & Partial<Pick<Tarjeta, 'texto' | 'sub'>>, accion: 'aceptar' | 'descartar') => pedir<{ ok: true }>(c, 'validar', { method: 'POST', body: JSON.stringify({ tipo: t.tipo, id: t.id, accion, texto: t.texto ?? null, sub: t.sub ?? null }) })
+/** Lo cribado y lo que falta, para exportar (Mobile 2.7). */
+export const traerExportacion = (c: Credenciales) => pedir<Record<string, unknown> & { fecha: string }>(c, 'validar/exportar')
 export const traerAvisos = (c: Credenciales) => pedir<{ minutosAntes: number; avisos: AvisoApi[]; ahora?: { titulo: string; sub: string }; paraValidar?: number }>(c, 'avisos')
 
 // ─── Mobile 2.0: lo adjunto en la charla y los lugares con su tipo ──────
