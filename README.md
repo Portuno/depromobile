@@ -22,6 +22,14 @@ agregás una librería nativa o cambiás permisos, hace falta un APK nuevo (y su
 
 ## APK sin gastar builds de Expo
 
+**En GitHub (lo más fácil):** Actions → APK → Run workflow (o `git tag apk-2.5 && git push --tags`). Arma el APK con la
+clave de firma de Expo (se instala encima del que ya está, sin perder nada) y lo deja en «Artifacts» del run. Necesita
+una vez el secreto `EXPO_TOKEN` (expo.dev → Account settings → Access tokens) en Settings → Secrets and variables →
+Actions. Para pasarlo al teléfono: bajalo en la compu, conectá el teléfono por cable en «Transferencia de archivos»,
+copialo y abrilo desde Archivos (o `adb install -r deprocast-….apk` con la depuración USB prendida).
+
+**En tu compu:**
+
 En una compu con Linux o macOS, Java 17 y el Android SDK: `./scripts/apk-local.sh` arma el APK de producción en `dist/`
 (corre las pruebas y el typecheck antes). Es el mismo build que en la nube, sin el límite mensual del plan.
 

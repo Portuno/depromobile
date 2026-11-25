@@ -1,0 +1,41 @@
+# Arma el APK de producción en GitHub (gratis, sin gastar los builds del plan de Expo) y lo deja para bajar.
+# Usa la clave de firma que guarda Expo (la misma del APK instalado: se instala encima sin perder nada), así que
+# necesita el secreto EXPO_TOKEN (expo.dev → Account settings → Access tokens) en Settings → Secrets → Actions.
+# Corre a mano (Actions → APK → Run workflow) o al subir una etiqueta apk-* (git tag apk-2.5 && git push --tags).
+name: APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['apk-*']
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      - run: npm test
+      - run: npx tsc --noEmit
+      - name: Armar el APK (build local de EAS, con las credenciales de Expo)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          CODIGO=$(node -p "require('./app.json').expo.android.versionCode")
+          npx -y eas-cli@latest build --platform android --profile production --local --non-interactive --output "deprocast-$VERSION-$CODIGO.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deprocast-apk
+          path: deprocast-*.apk
+          retention-days: 30
